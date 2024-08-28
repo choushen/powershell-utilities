@@ -2,19 +2,17 @@
 $extList = New-Object System.Collections.ArrayList
 $createdFolderPaths = New-Object System.Collections.ArrayList
 
+
 # Take path as input
 $targetDir = Read-Host "Enter the path of the directory you want to sort"
 Write-Host "Sorting files in $targetDir"
 
+
 # Get all files in the directory, only files
 $files = Get-ChildItem -Path $targetDir | Where-Object { 
     -not $_.PSIsContainer -and $_.Extension -notlike "*ps*" 
-}
+} # end
 
-Write-Host "Found $($files.Count) files"
-foreach ($file in $files) {
-    Write-Host "Processing file: $($file.Name)"
-}
 
 #Create folder for each extension
 for ($i = 0; $i -lt $files.Count; $i++) 
@@ -38,9 +36,18 @@ for ($i = 0; $i -lt $files.Count; $i++)
         # Add the extension to extList to prevent duplicate creation
         $extList.Add($ext)
     }
-}
+} # end
 
 
-foreach ($path in $createdFolderPaths) {
-    Write-Host "Creating folder for $path"
-}
+# Move files to their respective folders
+foreach ($file in $files) {
+
+    foreach ($folderPath in $createdFolderPaths) {
+
+        if ($file.Extension.Substring(1).ToLower() -eq (Get-Item $folderPath).Name.ToLower()) {
+            # move the file into the folder
+            Move-Item -Path $file.FullName -Destination "$folderPath\$($file.Name)"
+        }
+
+    }
+} # end
